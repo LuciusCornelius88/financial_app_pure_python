@@ -2,3 +2,5 @@
 /.vscode/
 /venv/
 /src/__pycache__/
+/dumps/*
+!dumps/.gitkeep
