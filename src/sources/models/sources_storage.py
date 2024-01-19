@@ -3,7 +3,6 @@ from collections import UserDict
 from pathlib import Path
 from datetime import datetime
 
-# from source_model import Source
 from config import dumps_path, sources_dump_file
 
 
@@ -18,9 +17,9 @@ class Sources(UserDict):
 
     def __init__(self):
         super().__init__()
-        self.dump_path = Path(dumps_path + sources_dump_file)
-        self.empty_storage_return = 'No sources in the storage'
-        self.change_log = []
+        self.__dump_path = Path(dumps_path + sources_dump_file)
+        self.__empty_storage_return = 'No sources in the storage'
+        self.__change_log = []
 
         change_log = f'{self.__class__.__name__} was created.'
         self.__update_change_log(change_log)
@@ -63,32 +62,32 @@ class Sources(UserDict):
 
 
     def show_all(self) -> str:
-        return str(self) if self.data else self.empty_storage_return
+        return str(self) if self.data else self.__empty_storage_return
     
 
     def save_to_file(self):
-        with open(self.dump_path, 'wb') as file:
+        with open(self.__dump_path, 'wb') as file:
             pickle.dump(self, file)
 
-        change_log = f'{self.__class__.__name__} storage saved to {self.dump_path}.\n'
+        change_log = f'{self.__class__.__name__} storage saved to {self.__dump_path}.\n'
         self.__update_change_log(change_log)
         return change_log
 
 
     def restore_from_file(self):
-        with open(self.dump_path, 'r+b') as file:
-            change_log = f'{self.__class__.__name__} restored from {self.dump_path}.\n'
+        with open(self.__dump_path, 'r+b') as file:
+            change_log = f'{self.__class__.__name__} restored from {self.__dump_path}.\n'
             self.__update_change_log(change_log)
             return pickle.load(file)
         
 
     def view_change_log(self):
-        return ('\n\n').join(self.change_log)
+        return ('\n\n').join(self.__change_log)
 
 
     def __update_change_log(self, change_log):
         log_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.change_log.append(log_date + '\n' + change_log)
+        self.__change_log.append(log_date + '\n' + change_log)
 
 
     def __repr__(self) -> str:
@@ -100,42 +99,3 @@ class Sources(UserDict):
 
     def __str__(self):
         return self.__repr__()
-
-
-
-# def main():
-#     source_data_1 = {
-#         'name': 'source_1',
-#         'init_balance': 1000
-#     }
-
-#     source_data_2 = {
-#         'name': 'source_2',
-#         'init_balance': 1000
-#     }
-
-#     source_data_3 = {
-#         'name': 'source_3',
-#         'init_balance': 1000
-#     }
-
-#     instance = Sources()
-
-#     source_1 = Source(source_data_1)
-#     source_2 = Source(source_data_2)
-#     source_3 = Source(source_data_3)
-
-#     instance.add(source_1)
-#     instance.add(source_2)
-#     instance.add(source_3)
-
-#     target_source = instance.get(source_1.id)
-#     print(target_source)
-#     target_source.update_name('New name')
-#     target_source.update_init_balance(100000)
-#     print(target_source.view_change_log())
-#     print(target_source)
-
-
-# if __name__ == '__main__':
-#     main()

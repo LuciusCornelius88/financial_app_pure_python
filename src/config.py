@@ -5,5 +5,8 @@ transactions_dump_file = 'transactions_copy.bin'
 
 stop_function_code = 100
 error_code = 400
+exit_code = '-1'
+
+interruption_message = 'Input was interrupted.'
 
 id_delimiter = ': '

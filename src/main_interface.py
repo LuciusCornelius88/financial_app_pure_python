@@ -36,7 +36,7 @@ class MainInterfaceCommands(Enum):
     CATEGORIES = {'id': 2, 'val': 'Operations with Categories'}
     TRANSACTIONS = {'id': 3, 'val': 'Operations with Transactions'}
     REPORT = {'id': 4, 'val': 'Operations with report'}
-    STOP = {'id': 5, 'val': 'Stop the programm'}
+    STOP = {'id': -1, 'val': 'Stop the programm'}
 
     def __init__(self, vals):
         self.id = vals['id']
