@@ -1,12 +1,12 @@
 from enum import Enum, unique
 
 from source_creation_interface import SourceCreationInterface
-from source_deletion_interface import SourceDeletionInterface
-from source_getter_interface import SourceGetterInterface
-from source_model import Source
+from source_get_delete_interface import SourceGetterInterface, SourceDeletionInterface
 from source_update_interface import SourceUpdateInterface
+from source_model import Source
 from sources_storage import Sources
-from config import error_code, stop_function_code
+from config import error_code, stop_function_code, key_error_message, \
+    loop_exit_message, create_obj_message, create_instance_message
 
 @unique
 class SourcesInterfaceCommands(Enum):
@@ -35,8 +35,8 @@ class SourcesInterface:
         self.__commands = SourcesInterfaceCommands
         self.__source_creation_interface = SourceCreationInterface()
         self.__source_getter_interface = SourceGetterInterface(self.__sources_storage)
-        self.__source_update_interface = SourceUpdateInterface(self.__sources_storage)
         self.__source_deletion_interface = SourceDeletionInterface(self.__sources_storage)
+        self.__source_update_interface = SourceUpdateInterface(self.__sources_storage)
         self.__new_sources_cache = []
 
 
@@ -63,13 +63,13 @@ class SourcesInterface:
             command = commands[command_id]
             return command
         except KeyError:
-            print(f'{KeyError.__name__}: there is no such id. Try again.\n')
+            print(f'{KeyError.__name__}{key_error_message}')
             return error_code
         
 
     def trigger_stop(self):
         self.__sources_storage.save_to_file()
-        print(f'Stop working with {self.__class__.__name__}.\n')
+        print(f'{loop_exit_message} {self.__class__.__name__}.\n')
         return stop_function_code
     
 
@@ -78,8 +78,7 @@ class SourcesInterface:
         if source_data == error_code:
             return error_code
         self.__new_sources_cache.append(source_data)
-        log_message = (f'Created object with data:\n' + 
-                       f'{source_data}')
+        log_message = f'{create_obj_message}{source_data}'
         return log_message
     
 
@@ -87,14 +86,14 @@ class SourcesInterface:
         for source_data in self.__new_sources_cache:
             source_instance = Source(source_data)
             self.__sources_storage.add(source_instance)
-        log_message = (f'Created instances:\n' + 
-                       '; '.join(f'{source["name"]}: {source["init_balance"]}' for source in self.__new_sources_cache))
+        log_message = (f'{create_instance_message}' + 
+                       '; '.join(f'{source.get("name")}: {source.get("init_balance")}' for source in self.__new_sources_cache))
         self.__new_sources_cache.clear()
         return log_message
 
 
     def trigger_get(self):
-        return self.__source_getter_interface.get()
+        return self.__source_getter_interface.target()
 
 
     def trigger_get_all(self):
@@ -106,4 +105,4 @@ class SourcesInterface:
 
 
     def trigger_delete(self):
-        return self.__source_deletion_interface.delete()
+        return self.__source_deletion_interface.target()

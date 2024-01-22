@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime
 
 from config import dumps_path, sources_dump_file
+from decorators import errors_handler
 
 
 class Sources(UserDict):
@@ -36,29 +37,21 @@ class Sources(UserDict):
         return change_log
 
 
+    @errors_handler
     def get(self, instance_id):
-        try:
-            instance = self.data[instance_id]
-            change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" got from the {self.__class__.__name__} storage.'
-            self.__update_change_log(change_log)
-            return instance
-        except KeyError:
-            change_log = f'There is no instance with name "{instance_id}" in {self.__class__.__name__} storage.'
-            self.__update_change_log(change_log)
-            return change_log
+        instance = self.data[instance_id]
+        change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" got from the {self.__class__.__name__} storage.'
+        self.__update_change_log(change_log)
+        return instance
         
 
+    @errors_handler
     def delete(self, instance_id):
-        try:
-            instance = self.data.pop(instance_id)
-            change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" deleted from the {self.__class__.__name__} storage.'
-            instance.delete()
-            self.__update_change_log(change_log)
-            return change_log
-        except KeyError:
-            change_log = f'There is no instance with name "{instance_id}" in {self.__class__.__name__} storage.'
-            self.__update_change_log(change_log)
-            return change_log
+        instance = self.data.pop(instance_id)
+        change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" deleted from the {self.__class__.__name__} storage.'
+        instance.delete()
+        self.__update_change_log(change_log)
+        return change_log
 
 
     def show_all(self) -> str:

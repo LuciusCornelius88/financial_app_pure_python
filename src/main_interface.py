@@ -1,7 +1,9 @@
 from enum import Enum, unique
 
 from sources_interface import SourcesInterface
-from config import stop_function_code, error_code
+from config import stop_function_code, error_code, goodbye_message, key_error_message
+from transactions_interface import TransactionsInterface
+
 
 
 def interface_loop(interface):
@@ -39,8 +41,8 @@ class MainInterfaceCommands(Enum):
     STOP = {'id': -1, 'val': 'Stop the programm'}
 
     def __init__(self, vals):
-        self.id = vals['id']
-        self.val = vals['val']
+        self.id = vals.get('id')
+        self.val = vals.get('val')
 
 
 
@@ -48,6 +50,7 @@ class MainInterface:
     def __init__(self) -> None:
         self.commands = MainInterfaceCommands
         self.sources_interface = SourcesInterface()
+        self.transactions_interface = TransactionsInterface()
 
 
     def show_commands(self):
@@ -71,12 +74,12 @@ class MainInterface:
             command = commands[command_id]
             return command
         except KeyError:
-            print(f'{KeyError.__name__}: there is no such id. Try again.\n')
+            print(f'{KeyError.__name__}{key_error_message}')
             return error_code
     
 
     def trigger_stop(self):
-        print('Good bye!\n')
+        print(goodbye_message)
         return stop_function_code
 
 
@@ -89,7 +92,8 @@ class MainInterface:
 
 
     def trigger_transactions(self):
-        return 'Transsactions'
+        ...
+        # interface_loop(self.transactions_interface)
     
 
     def trigger_transactions(self):
