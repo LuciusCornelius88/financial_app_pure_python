@@ -1,15 +1,22 @@
+import sys
 from enum import Enum, unique
+from pathlib import Path
 
-from config import stop_function_code, error_code
+sys.path.append(str(Path(__file__).parent / 'interfaces'))
+sys.path.append(str(Path(__file__).parent / 'models'))
+sys.path.append(str(Path(__file__).parent.parent))
+
+from transaction_creation_interface import TransactionCreationInterface
+from transaction_get_delete_interface import TransactionGetterInterface, TransactionDeletionInterface
+from transaction_update_interface import TransactionUpdateInterface
 from transaction_model import Transaction
 from transactions_storage import Transactions
-
-# from transactions.models.transaction_model import Transaction
-# from transactions.models.transactions_storage import Transactions
+from config import error_code, stop_function_code, key_error_message, \
+    loop_exit_message, create_obj_message, create_instance_message
 
 
 @unique
-class SourcesInterfaceCommands(Enum):
+class TransactionsInterfaceCommand(Enum):
     CREATE = {'id': 1, 'val': 'Create new Transaction'}
     MASS_INSERT = {'id': 2, 'val': 'Insert new transactions into database'}
     GET = {'id': 3, 'val': 'View transaction'}
@@ -27,16 +34,16 @@ class SourcesInterfaceCommands(Enum):
 class TransactionsInterface:
     def __init__(self) -> None:
         try:
-            self.__transactions_storage = Transactions().restore_from_file()
+            self.transactions_storage = Transactions().restore_from_file()
         except (FileNotFoundError, EOFError):
-            self.__transactions_storage = Transactions()
+            self.transactions_storage = Transactions()
 
-        self.__commands = SourcesInterfaceCommands
-        # self.__transaction_creation_interface = TransactionCreationInterface()
-        # self.__transaction_getter_interface = TransactionGetterInterface(self.__sources_storage)
-        # self.__transaction_update_interface = TransactionUpdateInterface(self.__sources_storage)
-        # self.__transaction_deletion_interface = TransactionDeletionInterface(self.__sources_storage)
-        self.__new_transactions_cache = []
+        self.commands = TransactionsInterfaceCommand
+        self.transaction_creation_interface = TransactionCreationInterface()
+        self.transaction_getter_interface = TransactionGetterInterface(self.transactions_storage)
+        self.transaction_update_interface = TransactionUpdateInterface(self.transactions_storage)
+        self.transaction_deletion_interface = TransactionDeletionInterface(self.transactions_storage)
+        self.new_transactions_cache = []
 
 
     def show_commands(self):
@@ -49,13 +56,13 @@ class TransactionsInterface:
     
     def handle_commands(self, command_id):
         commands = {
-            self.__commands.CREATE.id: self.trigger_create,
-            self.__commands.MASS_INSERT.id: self.trigger_mass_insert,
-            self.__commands.GET.id: self.trigger_get,
-            self.__commands.GET_ALL.id: self.trigger_get_all,
-            self.__commands.UPDATE.id: self.trigger_update,
-            self.__commands.DELETE.id: self.trigger_delete,
-            self.__commands.STOP.id: self.trigger_stop,
+            self.commands.CREATE.id: self.trigger_create,
+            self.commands.MASS_INSERT.id: self.trigger_mass_insert,
+            self.commands.GET.id: self.trigger_get,
+            self.commands.GET_ALL.id: self.trigger_get_all,
+            self.commands.UPDATE.id: self.trigger_update,
+            self.commands.DELETE.id: self.trigger_delete,
+            self.commands.STOP.id: self.trigger_stop,
         }
 
         try:
@@ -67,42 +74,42 @@ class TransactionsInterface:
         
 
     def trigger_stop(self):
-        self.__transactions_storage.save_to_file()
+        self.transactions_storage.save_to_file()
         print(f'Stop working with {self.__class__.__name__}.\n')
         return stop_function_code
     
 
     def trigger_create(self):
-        source_data = self.__transaction_creation_interface.create()
+        source_data = self.transaction_creation_interface.create()
         if source_data == error_code:
             return error_code
-        self.__new_transactions_cache.append(source_data)
+        self.new_transactions_cache.append(source_data)
         log_message = (f'Created object with data:\n' + 
                        f'{source_data}')
         return log_message
     
 
     def trigger_mass_insert(self):
-        for source_data in self.__new_transactions_cache:
+        for source_data in self.new_transactions_cache:
             source_instance = Transaction(source_data)
-            self.__transactions_storage.add(source_instance)
+            self.transactions_storage.add(source_instance)
         log_message = (f'Created instances:\n' + 
-                       '; '.join(f'{source["name"]}: {source["init_balance"]}' for source in self.__new_sources_cache))
-        self.__new_transactions_cache.clear()
+                       '; '.join(f'{source["name"]}: {source["init_balance"]}' for source in self.new_sources_cache))
+        self.new_transactions_cache.clear()
         return log_message
 
 
     def trigger_get(self):
-        return self.__transaction_getter_interface.get()
+        return self.transaction_getter_interface.get()
 
 
     def trigger_get_all(self):
-        return self.__transactions_storage.show_all()
+        return self.transactions_storage.show_all()
     
 
     def trigger_update(self):
-        return self.__transaction_update_interface.update()
+        return self.transaction_update_interface.update()
 
 
     def trigger_delete(self):
-        return self.__transaction_deletion_interface.delete()
+        return self.transaction_deletion_interface.delete()

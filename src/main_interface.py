@@ -1,9 +1,13 @@
+import sys
 from enum import Enum, unique
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent / 'sources'))
+sys.path.append(str(Path(__file__).parent / 'transactions'))
 
 from sources_interface import SourcesInterface
+# from transactions_interface import TransactionsInterface
 from config import stop_function_code, error_code, goodbye_message, key_error_message
-from transactions_interface import TransactionsInterface
-
 
 
 def interface_loop(interface):
@@ -17,12 +21,12 @@ def interface_loop(interface):
             print(f'{ValueError.__name__}: id should be numeric. Try again!')
             continue
         except KeyboardInterrupt:
-            input_command = MainInterfaceCommands.STOP.id
+            input_command = MainInterfaceCommand.STOP.id
 
         trigger_function = interface.handle_commands(input_command)
         if trigger_function == error_code:
             continue
-
+    
         result = trigger_function()
         if result == stop_function_code:
             break
@@ -33,7 +37,7 @@ def interface_loop(interface):
 
 
 @unique
-class MainInterfaceCommands(Enum):
+class MainInterfaceCommand(Enum):
     SOURCES = {'id': 1, 'val': 'Operations with Sources'}
     CATEGORIES = {'id': 2, 'val': 'Operations with Categories'}
     TRANSACTIONS = {'id': 3, 'val': 'Operations with Transactions'}
@@ -48,9 +52,9 @@ class MainInterfaceCommands(Enum):
 
 class MainInterface:
     def __init__(self) -> None:
-        self.commands = MainInterfaceCommands
+        self.commands = MainInterfaceCommand
         self.sources_interface = SourcesInterface()
-        self.transactions_interface = TransactionsInterface()
+        # self.transactions_interface = TransactionsInterface()
 
 
     def show_commands(self):

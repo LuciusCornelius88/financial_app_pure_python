@@ -1,8 +1,12 @@
+import unittest
 import shutil
-import os, stat
+import os, stat, sys
 from pathlib import Path
 
-from main_interface import MainInterface, interface_loop
+sys.path.append(str(Path(__file__).parent / 'sources_tests'))
+sys.path.append(str(Path(__file__).parent / 'transactions_tests'))
+
+from test_source_model import TestSource
 
 
 def remove_readonly(func, path, _):
@@ -20,14 +24,15 @@ def delete_cache(input_path):
 
 def main():
     try:
-        interface = MainInterface()
-        interface_loop(interface)
+        test_suite = unittest.TestLoader().loadTestsFromTestCase(TestSource)
+        unittest.TextTestRunner().run(test_suite)
         delete_cache(Path(__file__).parent.parent)
     except Exception as e:
+        print(e)
         delete_cache(Path(__file__).parent.parent)
-        raise e
 
 
 if __name__ == '__main__':
     main()
         
+
