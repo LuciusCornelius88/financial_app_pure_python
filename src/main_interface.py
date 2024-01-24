@@ -3,10 +3,12 @@ from enum import Enum, unique
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent / 'sources'))
+sys.path.append(str(Path(__file__).parent / 'sources/models'))
 sys.path.append(str(Path(__file__).parent / 'transactions'))
 
+from sources_storage import Sources
 from sources_interface import SourcesInterface
-# from transactions_interface import TransactionsInterface
+from transactions_interface import TransactionsInterface
 from config import stop_function_code, error_code, goodbye_message, key_error_message
 
 
@@ -52,9 +54,14 @@ class MainInterfaceCommand(Enum):
 
 class MainInterface:
     def __init__(self) -> None:
+        try:
+            sources_storage = Sources().restore_from_file()
+        except (FileNotFoundError, EOFError):
+            sources_storage = Sources()
+            
         self.commands = MainInterfaceCommand
-        self.sources_interface = SourcesInterface()
-        # self.transactions_interface = TransactionsInterface()
+        self.sources_interface = SourcesInterface(sources_storage)
+        self.transactions_interface = TransactionsInterface(sources_storage)
 
 
     def show_commands(self):

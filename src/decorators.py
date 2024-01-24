@@ -18,3 +18,17 @@ def errors_handler(func):
             print(f'{KeyboardInterrupt.__name__}: {interruption_message}')
             return stop_function_code
     return inner 
+
+
+def while_loop(func):
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        while True:
+            result = func(*args, **kwargs)
+            if result == stop_function_code:
+                return stop_function_code
+            elif result == error_code:
+                continue
+            else: 
+                return result
+    return inner

@@ -97,3 +97,22 @@ class Sources(UserDict):
     def __str__(self):
         return self.__repr__()
     
+
+
+# def main():
+#     from source_model import Source
+
+#     storage = Sources()
+#     source = Source({'name': 'name', 'init_balance': 1000})
+
+#     storage.add(source)
+#     print(storage.view_change_log())
+#     print(storage.get(source.id))
+#     new_storage = Sources()
+#     print(new_storage.view_change_log())
+#     print(storage.get(source.id))
+#     print(storage == new_storage)
+
+
+# if __name__ == '__main__':
+#     main()

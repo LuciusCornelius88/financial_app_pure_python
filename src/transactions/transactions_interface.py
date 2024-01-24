@@ -32,14 +32,14 @@ class TransactionsInterfaceCommand(Enum):
 
 
 class TransactionsInterface:
-    def __init__(self) -> None:
+    def __init__(self, sources_storage) -> None:
         try:
             self.transactions_storage = Transactions().restore_from_file()
         except (FileNotFoundError, EOFError):
             self.transactions_storage = Transactions()
 
         self.commands = TransactionsInterfaceCommand
-        self.transaction_creation_interface = TransactionCreationInterface()
+        self.transaction_creation_interface = TransactionCreationInterface(sources_storage)
         self.transaction_getter_interface = TransactionGetterInterface(self.transactions_storage)
         self.transaction_update_interface = TransactionUpdateInterface(self.transactions_storage)
         self.transaction_deletion_interface = TransactionDeletionInterface(self.transactions_storage)
@@ -80,21 +80,22 @@ class TransactionsInterface:
     
 
     def trigger_create(self):
-        source_data = self.transaction_creation_interface.create()
-        if source_data == error_code:
+        transaction_data = self.transaction_creation_interface.create()
+        if transaction_data == error_code:
             return error_code
-        self.new_transactions_cache.append(source_data)
+        self.new_transactions_cache.append(transaction_data)
         log_message = (f'Created object with data:\n' + 
-                       f'{source_data}')
+                       f'{transaction_data}')
         return log_message
     
 
     def trigger_mass_insert(self):
-        for source_data in self.new_transactions_cache:
-            source_instance = Transaction(source_data)
-            self.transactions_storage.add(source_instance)
+        for transaction_data in self.new_transactions_cache:
+            transaction_instance = Transaction(transaction_data)
+            self.transactions_storage.add(transaction_instance)
         log_message = (f'Created instances:\n' + 
-                       '; '.join(f'{source["name"]}: {source["init_balance"]}' for source in self.new_sources_cache))
+                       '; '.join(f'{transaction["id"]}: {transaction["description"]} {transaction["amount"]}' 
+                                 for transaction in self.new_transactions_cache))
         self.new_transactions_cache.clear()
         return log_message
 

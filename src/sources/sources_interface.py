@@ -33,17 +33,13 @@ class SourcesInterfaceCommand(Enum):
 
 
 class SourcesInterface:
-    def __init__(self) -> None:
-        try:
-            self.sources_storage = Sources().restore_from_file()
-        except (FileNotFoundError, EOFError):
-            self.sources_storage = Sources()
-
+    def __init__(self, sources_storage) -> None:
+        self.sources_storage = sources_storage
         self.commands = SourcesInterfaceCommand
         self.source_creation_interface = SourceCreationInterface()
-        self.source_getter_interface = SourceGetterInterface(self.sources_storage)
-        self.source_deletion_interface = SourceDeletionInterface(self.sources_storage)
-        self.source_update_interface = SourceUpdateInterface(self.sources_storage)
+        self.source_getter_interface = SourceGetterInterface(sources_storage)
+        self.source_deletion_interface = SourceDeletionInterface(sources_storage)
+        self.source_update_interface = SourceUpdateInterface(sources_storage)
         self.new_sources_cache = []
 
 

@@ -73,7 +73,7 @@ class Transaction:
 
 
     def delete(self) -> str:
-        change_log = f'Transaction {self.id}: {self.description} was deleted.\n'
+        change_log = f'Transaction {self.id}: {self.description} {self.amount} was deleted.\n'
 
         self.id = None
         self.date = None
@@ -92,10 +92,10 @@ class Transaction:
 
     def update(self, params):
         ch_date_log = self._update_date(params['date'])
-        ch_description_log = self._update_date(params['description'])
-        ch_source_log = self._update_date(params['source'])
-        ch_category_log = self._update_date(params['category'])
-        ch_amount_log = self._update_date(params['amount'])
+        ch_description_log = self._update_description(params['description'])
+        ch_source_log = self._update_source(params['source'])
+        ch_category_log = self._update_category(params['category'])
+        ch_amount_log = self._update_amount(params['amount'])
 
         return (ch_date_log + ch_description_log + ch_source_log + ch_category_log + ch_amount_log)
 
