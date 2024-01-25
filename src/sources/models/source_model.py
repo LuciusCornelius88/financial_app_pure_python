@@ -92,8 +92,26 @@ class Source:
         return change_log
 
 
+    def view_transactions(self) -> str:
+        return '\n\n'.join(self._transactions)
+
+
     def view_change_log(self) -> str:
         return '\n\n'.join(self._change_log)
+    
+
+    def update_current_balance(self, difference):
+        self.current_balance += difference
+        change_log = (f'New current balance: {self.current_balance}\n' +
+                      f'Initial balance: {self.init_balance}\n' +
+                      f'Difference: {difference}.\n\n')
+        self._update_change_log(change_log)
+
+    
+    def update_transactions(self, new_transaction):
+        self._transactions.append(new_transaction)
+        change_log = f'Transaction {new_transaction.id} was added.'
+        self._update_change_log(change_log)
 
 
     def update(self, params) -> str:
@@ -103,10 +121,10 @@ class Source:
         return ch_name_log + ch_balance_log
 
 
-    def _update_name(self, name: str) -> str:
-        change_log = f'Source name changed from {self.name} to {name}.\n'
-        self.id = name
-        self.name = name
+    def _update_name(self, new_name: str) -> str:
+        change_log = f'Source name changed from {self.name} to {new_name}.\n'
+        self.id = new_name
+        self.name = new_name
         self._update_change_log(change_log)
 
         return change_log

@@ -33,9 +33,9 @@ class Transactions(UserDict):
     def add(self, instance: object):
         if instance.id not in self.data:
             self.data[instance.id] = instance
-            change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" added to {self.__class__.__name__} storage.'
+            change_log = f'{instance.__class__.__name__} "{instance.id}" added to {self.__class__.__name__} storage.'
         else:
-            change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" is already in {self.__class__.__name__} storage.'
+            change_log = f'{instance.__class__.__name__} "{instance.id}" is already in {self.__class__.__name__} storage.'
 
         self._update_change_log(change_log)
         return change_log
@@ -44,7 +44,7 @@ class Transactions(UserDict):
     @errors_handler
     def get(self, instance_id):
         instance = self.data[instance_id]
-        change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" got from the {self.__class__.__name__} storage.'
+        change_log = f'{instance.__class__.__name__} "{instance.id}" got from the {self.__class__.__name__} storage.'
         self._update_change_log(change_log)
         return instance
 
@@ -52,7 +52,7 @@ class Transactions(UserDict):
     @errors_handler
     def delete(self, instance_id):
         instance = self.data.pop(instance_id)
-        change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" deleted from the {self.__class__.__name__} storage.'
+        change_log = f'{instance.__class__.__name__} "{instance.id}" deleted from the {self.__class__.__name__} storage.'
         instance.delete()
         self._update_change_log(change_log)
         return change_log

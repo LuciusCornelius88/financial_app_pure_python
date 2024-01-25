@@ -30,6 +30,7 @@ class Transaction:
         self.description = fields['description']
         self.source = fields['source']
         self.category = fields['category']
+        self.type = fields['type']
         self.amount = fields['amount']
         self._change_log = []
 
@@ -59,6 +60,10 @@ class Transaction:
     def source(self, source):
         if source is None:
             self._source = None
+        else:
+            source.update_transactions(self)
+            source.current_transaction = self
+            self._source = source
 
     
     @property
@@ -70,6 +75,10 @@ class Transaction:
     def category(self, category):
         if category is None:
             self._category = None
+        else:
+            category.update_transactions(self)
+            category.current_transaction = self
+            self._category = category
 
 
     def delete(self) -> str:
@@ -80,6 +89,7 @@ class Transaction:
         self.description = None
         self.source = None
         self.category = None
+        self.type = None
         self.amount = None
 
         self._update_change_log(change_log)
@@ -95,9 +105,10 @@ class Transaction:
         ch_description_log = self._update_description(params['description'])
         ch_source_log = self._update_source(params['source'])
         ch_category_log = self._update_category(params['category'])
+        ch_type_log = self._update_type(params['type'])
         ch_amount_log = self._update_amount(params['amount'])
 
-        return (ch_date_log + ch_description_log + ch_source_log + ch_category_log + ch_amount_log)
+        return (ch_date_log + ch_description_log + ch_source_log + ch_category_log + ch_type_log + ch_amount_log)
 
 
     def _update_date(self, new_date):
@@ -133,6 +144,14 @@ class Transaction:
         return change_log
 
 
+    def _update_type(self, new_type):
+        change_log = f'Type changed from {self.type} to {new_type}.\n'
+        self.type = new_type
+        self._update_change_log(change_log)
+
+        return change_log
+
+
     def _update_amount(self, new_amount):
         change_log = f'Amount changed from {self.amount} to {new_amount}.\n'
         self.amount = new_amount
@@ -150,9 +169,9 @@ class Transaction:
         return (f'Transaction id: {self.id} \n' +
                 f'Transaction date: {self.date} \n' +
                 f'Transaction description: {self.description}\n' +
-                f'Transaction source: {self.source.id}\n' +
-                f'Transaction category: {self.category.id}\n' +
-                f'Transaction amount: {self.amount}\n')
+                f'Transaction source: {self.source}\n' +
+                # f'Transaction category: {self.category.id}\n' +
+                f'Transaction amount: {self.amount}')
 
 
     def __str__(self):

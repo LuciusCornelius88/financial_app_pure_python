@@ -48,7 +48,7 @@ class TransactionsInterface:
 
     def show_commands(self):
         commands = f''
-        for command in self.__commands:
+        for command in self.commands:
             commands += f'Enter {command.id} to trigger {command.val}\n'
 
         return commands
@@ -69,13 +69,13 @@ class TransactionsInterface:
             command = commands[command_id]
             return command
         except KeyError:
-            print(f'{KeyError.__name__}: there is no such id. Try again.\n')
+            print(f'{KeyError.__name__}{key_error_message}')
             return error_code
         
 
     def trigger_stop(self):
         self.transactions_storage.save_to_file()
-        print(f'Stop working with {self.__class__.__name__}.\n')
+        print(f'{loop_exit_message} {self.__class__.__name__}.\n')
         return stop_function_code
     
 
@@ -84,8 +84,7 @@ class TransactionsInterface:
         if transaction_data == error_code:
             return error_code
         self.new_transactions_cache.append(transaction_data)
-        log_message = (f'Created object with data:\n' + 
-                       f'{transaction_data}')
+        log_message = (f'{create_obj_message}{transaction_data}')
         return log_message
     
 
@@ -93,8 +92,8 @@ class TransactionsInterface:
         for transaction_data in self.new_transactions_cache:
             transaction_instance = Transaction(transaction_data)
             self.transactions_storage.add(transaction_instance)
-        log_message = (f'Created instances:\n' + 
-                       '; '.join(f'{transaction["id"]}: {transaction["description"]} {transaction["amount"]}' 
+        log_message = (f'{create_instance_message}' + 
+                       '; '.join(f'{transaction["date"]}: {transaction["description"]} {transaction["amount"]}' 
                                  for transaction in self.new_transactions_cache))
         self.new_transactions_cache.clear()
         return log_message

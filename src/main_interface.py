@@ -77,7 +77,7 @@ class MainInterface:
             self.commands.SOURCES.id: self.trigger_sources,
             self.commands.CATEGORIES.id: self.trigger_categories,
             self.commands.TRANSACTIONS.id: self.trigger_transactions,
-            self.commands.REPORT.id: self.trigger_transactions,
+            self.commands.REPORT.id: self.trigger_report,
             self.commands.STOP.id: self.trigger_stop,
         }
 
@@ -103,10 +103,9 @@ class MainInterface:
 
 
     def trigger_transactions(self):
-        ...
-        # interface_loop(self.transactions_interface)
+        interface_loop(self.transactions_interface)
     
 
-    def trigger_transactions(self):
+    def trigger_report(self):
         return 'Report'
     

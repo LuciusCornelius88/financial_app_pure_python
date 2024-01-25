@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from datetime import datetime
+from enum import Enum, unique
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -9,12 +10,31 @@ from config import error_code, stop_function_code, exit_code, interruption_messa
 from decorators import errors_handler, while_loop
 
 
+@unique
+class TransactionType(Enum):
+    INCOME = {'id': 1, 'val': 'income'}
+    OUTCOME = {'id': 2, 'val': 'outcome'}
+
+    def __init__(self, vals) -> None:
+        self.id = vals['id']
+        self.val = vals['val']
+
+    @classmethod
+    def get_values(cls):
+        dic = {}
+        for item in cls:
+            dic[item.id] = item.val
+        return dic
+
+
+
 class TransactionCreationInterface:
 
     def __init__(self, sources_storage, default_description=None, default_amount=None) -> None:
         self.exit_code = exit_code
         self.default_input = default_input
         self.sources_storage = sources_storage
+        self.transaction_types = TransactionType
         self.default_date = datetime.now().date().strftime(date_format)
         self.default_description = default_description if default_description else 'Transaction'
         self.default_amount = default_amount if default_amount else 0
@@ -24,6 +44,7 @@ class TransactionCreationInterface:
                                           f'or enter {self.exit_code} to exit the input: \n')
         self.create_amount_prompt = (f'Enter transaction amount or enter {self.default_input} to set to default '
                                      f'or enter {self.exit_code} to exit the input: \n')
+        self.create_type_prompt = (f'Enter type of transaction or enter {self.exit_code} to exit the input.\n')
 
 
     def create(self):
@@ -35,19 +56,26 @@ class TransactionCreationInterface:
         if description == stop_function_code:
             return error_code
         
+        transaction_type = self._create_type()
+        if transaction_type == stop_function_code:
+            return error_code
+        
         amount = self._create_amount()
         if amount == stop_function_code:
             return error_code
+        amount = (amount * -1) if transaction_type == self.transaction_types.OUTCOME.val else amount
         
         source = self._get_source(amount)
         if source == error_code:
             return error_code
+        source.update_current_balance(amount)
         
         category = self._get_category(amount)
         if category == error_code:
             return error_code
         
-        return {'date': date, 'description': description, 'source': source, 'category': category, 'amount': amount}
+        return {'date': date, 'description': description, 'source': source, 
+                'category': category, 'type': transaction_type, 'amount': amount}
 
 
     @while_loop
@@ -86,6 +114,24 @@ class TransactionCreationInterface:
             return stop_function_code
         else:
             return float(amount)
+        
+
+    @while_loop
+    @errors_handler
+    def _create_type(self):
+        type_id = input(f'{self.create_type_prompt}{self._show_types()}')
+        if type_id == self.exit_code:
+            print(interruption_message)
+            return stop_function_code
+        return self.transaction_types.get_values()[int(type_id)]
+    
+
+    def _show_types(self):
+        types = f''
+        for type in self.transaction_types:
+            types += f'Enter {type.id} to trigger {type.val}\n'
+
+        return types
 
 
     def _get_source(self, amount):
@@ -129,13 +175,13 @@ class InstanceGetter:
 
     def _get_available_keys(self):
         available_keys = {key.split(id_delimiter)[1]: key for key in self.storage.data.keys()
-                          if self.storage.data[key].current_balance >= self.amount}
+                          if self.amount >= 0 or self.storage.data[key].current_balance >= abs(self.amount)}
         return available_keys if available_keys else self.no_available_keys_message
 
 
     def _create_view_message(self):
         return '\n'.join(f'{key.split(id_delimiter)[1]}: {value.id.split(id_delimiter)[0]}' for key, value in self.storage.items() 
-                         if self.storage.data[key].current_balance >= self.amount)
+                         if self.amount >= 0 or self.storage.data[key].current_balance >= abs(self.amount))
 
 
     @while_loop
