@@ -23,15 +23,16 @@ class Transaction:
         self._id_suffix = f'{id_delimiter}{self.instance_id}'
         self._id = None
         self._source = None
-        self._category = None
+        self._target = None
 
         self.id = fields['date']
         self.date = fields['date']
         self.description = fields['description']
-        self.source = fields['source']
-        self.category = fields['category']
         self.type = fields['type']
-        self.amount = fields['amount']
+        self.source_amount = fields['source_amount']
+        self.target_amount = fields['target_amount']
+        self.source = fields['source']
+        self.target = fields['target']
         self._change_log = []
 
         change_log = f'{self.__class__.__name__} {self.id} was created.'
@@ -61,36 +62,35 @@ class Transaction:
         if source is None:
             self._source = None
         else:
-            source.update_transactions(self)
-            source.current_transaction = self
+            source.update_transaction(self)
             self._source = source
 
     
     @property
-    def category(self):
-        return self._category
+    def target(self):
+        return self._target
     
 
-    @category.setter
-    def category(self, category):
-        if category is None:
-            self._category = None
+    @target.setter
+    def target(self, target):
+        if target is None:
+            self._target = None
         else:
-            category.update_transactions(self)
-            category.current_transaction = self
-            self._category = category
+            target.update_transaction(self, target=True)
+            self._target = target
 
 
     def delete(self) -> str:
-        change_log = f'Transaction {self.id}: {self.description} {self.amount} was deleted.\n'
+        change_log = f'Transaction {self.id}: {self.description} {self.source_amount} was deleted.\n'
 
         self.id = None
         self.date = None
         self.description = None
         self.source = None
-        self.category = None
+        self.target = None
         self.type = None
-        self.amount = None
+        self.source_amount = None
+        self.target_amount = None
 
         self._update_change_log(change_log)
         return change_log
@@ -104,11 +104,13 @@ class Transaction:
         ch_date_log = self._update_date(params['date'])
         ch_description_log = self._update_description(params['description'])
         ch_source_log = self._update_source(params['source'])
-        ch_category_log = self._update_category(params['category'])
+        ch_target_log = self._update_target(params['target'])
         ch_type_log = self._update_type(params['type'])
-        ch_amount_log = self._update_amount(params['amount'])
+        ch_source_amount_log = self._update_source_amount(params['source_amount'])
+        ch_target_amount_log = self._update_target_amount(params['target_amount'])
 
-        return (ch_date_log + ch_description_log + ch_source_log + ch_category_log + ch_type_log + ch_amount_log)
+        return (ch_date_log + ch_description_log + ch_source_log + 
+                ch_target_log + ch_type_log + ch_source_amount_log + ch_target_amount_log)
 
 
     def _update_date(self, new_date):
@@ -136,9 +138,9 @@ class Transaction:
         return change_log
 
 
-    def _update_category(self, new_category):
-        change_log = f'Category changed from {self.category.id} to {new_category.id}.\n'
-        self.category = new_category
+    def _update_target(self, new_target):
+        change_log = f'Target changed from {self.target.id} to {new_target.id}.\n'
+        self.target = new_target
         self._update_change_log(change_log)
 
         return change_log
@@ -152,9 +154,17 @@ class Transaction:
         return change_log
 
 
-    def _update_amount(self, new_amount):
-        change_log = f'Amount changed from {self.amount} to {new_amount}.\n'
-        self.amount = new_amount
+    def _update_source_amount(self, new_source_amount):
+        change_log = f'Source amount changed from {self.source_amount} to {new_source_amount}.\n'
+        self.source_amount = new_source_amount
+        self._update_change_log(change_log)
+
+        return change_log
+    
+
+    def _update_target_amount(self, new_target_amount):
+        change_log = f'Target amount changed from {self.target_amount} to {new_target_amount}.\n'
+        self.target_amount = new_target_amount
         self._update_change_log(change_log)
 
         return change_log
@@ -170,8 +180,9 @@ class Transaction:
                 f'Transaction date: {self.date} \n' +
                 f'Transaction description: {self.description}\n' +
                 f'Transaction source: {self.source}\n' +
-                # f'Transaction category: {self.category.id}\n' +
-                f'Transaction amount: {self.amount}')
+                # f'Transaction target: {self.target.id}\n' +
+                f'Source amount: {self.source_amount}\n' + 
+                f'Target amount: {self.target_amount}')
 
 
     def __str__(self):

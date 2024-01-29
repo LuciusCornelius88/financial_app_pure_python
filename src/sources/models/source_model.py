@@ -23,7 +23,7 @@ class Source:
         self._init_balance = None
         self._current_balance = None
         self._current_transaction = None
-        self._transactions = {}
+        self._transactions = []
         self._change_log = []
 
         self.id = fields['name']
@@ -98,20 +98,12 @@ class Source:
 
     def view_change_log(self) -> str:
         return '\n\n'.join(self._change_log)
-    
-
-    def update_current_balance(self, difference):
-        self.current_balance += difference
-        change_log = (f'New current balance: {self.current_balance}\n' +
-                      f'Initial balance: {self.init_balance}\n' +
-                      f'Difference: {difference}.\n\n')
-        self._update_change_log(change_log)
 
     
-    def update_transactions(self, new_transaction):
-        self._transactions.append(new_transaction)
-        change_log = f'Transaction {new_transaction.id} was added.'
-        self._update_change_log(change_log)
+    def update_transaction(self, transaction, target=False):
+        self.current_transaction = transaction
+        self._update_current_balance(target)
+        self._update_transactions()
 
 
     def update(self, params) -> str:
@@ -119,6 +111,21 @@ class Source:
         ch_balance_log = self._update_init_balance(params['init_balance'])
 
         return ch_name_log + ch_balance_log
+
+
+    def _update_current_balance(self, target):
+        difference = self.current_transaction.target_amount if target else self.current_transaction.source_amount
+        self.current_balance += difference
+        change_log = (f'New current balance: {self.current_balance}\n' +
+                      f'Initial balance: {self.init_balance}\n' +
+                      f'Difference: {difference}.\n\n')
+        self._update_change_log(change_log)
+
+    
+    def _update_transactions(self):
+        self._transactions.append(self.current_transaction)
+        change_log = f'Transaction {self.current_transaction.id} was added.'
+        self._update_change_log(change_log)
 
 
     def _update_name(self, new_name: str) -> str:

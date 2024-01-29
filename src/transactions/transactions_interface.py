@@ -93,7 +93,7 @@ class TransactionsInterface:
             transaction_instance = Transaction(transaction_data)
             self.transactions_storage.add(transaction_instance)
         log_message = (f'{create_instance_message}' + 
-                       '; '.join(f'{transaction["date"]}: {transaction["description"]} {transaction["amount"]}' 
+                       '; '.join(f'{transaction["date"]}: {transaction["description"]} {transaction["target_amount"]}' 
                                  for transaction in self.new_transactions_cache))
         self.new_transactions_cache.clear()
         return log_message

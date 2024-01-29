@@ -20,7 +20,24 @@ class TransactionType(Enum):
         self.val = vals['val']
 
     @classmethod
-    def get_values(cls):
+    def get_values(cls) -> dict:
+        dic = {}
+        for item in cls:
+            dic[item.id] = item.val
+        return dic
+    
+
+@unique
+class TargetType(Enum):
+    SOURCE = {'id': 1, 'val': 'source'}
+    CATEGORY = {'id': 2, 'val': 'category'}
+
+    def __init__(self, vals) -> None:
+        self.id = vals['id']
+        self.val = vals['val']
+
+    @classmethod
+    def get_values(cls) -> dict:
         dic = {}
         for item in cls:
             dic[item.id] = item.val
@@ -35,6 +52,7 @@ class TransactionCreationInterface:
         self.default_input = default_input
         self.sources_storage = sources_storage
         self.transaction_types = TransactionType
+        self.target_types = TargetType
         self.default_date = datetime.now().date().strftime(date_format)
         self.default_description = default_description if default_description else 'Transaction'
         self.default_amount = default_amount if default_amount else 0
@@ -44,7 +62,8 @@ class TransactionCreationInterface:
                                           f'or enter {self.exit_code} to exit the input: \n')
         self.create_amount_prompt = (f'Enter transaction amount or enter {self.default_input} to set to default '
                                      f'or enter {self.exit_code} to exit the input: \n')
-        self.create_type_prompt = (f'Enter type of transaction or enter {self.exit_code} to exit the input.\n')
+        self.create_transaction_type_prompt = (f'Enter type of transaction or enter {self.exit_code} to exit the input.\n')
+        self.create_target_type_prompt = (f'Enter type of target or enter {self.exit_code} to exit the input.\n')
 
 
     def create(self):
@@ -56,26 +75,36 @@ class TransactionCreationInterface:
         if description == stop_function_code:
             return error_code
         
-        transaction_type = self._create_type()
+        transaction_type = self._create_transaction_type()
         if transaction_type == stop_function_code:
             return error_code
         
-        amount = self._create_amount()
-        if amount == stop_function_code:
+        source_amount = self._create_amount()
+        if source_amount == stop_function_code:
             return error_code
-        amount = (amount * -1) if transaction_type == self.transaction_types.OUTCOME.val else amount
+        source_amount = source_amount if transaction_type == self.transaction_types.INCOME.val else (source_amount * -1)
         
-        source = self._get_source(amount)
+        source = self._get_source(source_amount)
         if source == error_code:
             return error_code
-        source.update_current_balance(amount)
+
+        target_type = self._create_target_type(source_amount)
+        if target_type == stop_function_code:
+            return error_code
+        source_amount = source_amount if target_type == self.target_types.CATEGORY.val else (source_amount * -1)
+        target_amount = source_amount if target_type == self.target_types.CATEGORY.val else (source_amount * -1)
         
-        category = self._get_category(amount)
-        if category == error_code:
+        target = self._get_category(target_amount) if target_type == self.target_types.CATEGORY.val else self._get_source(target_amount)
+        if target == error_code:
             return error_code
         
-        return {'date': date, 'description': description, 'source': source, 
-                'category': category, 'type': transaction_type, 'amount': amount}
+        return {'date': date, 
+                'description': description, 
+                'source': source, 
+                'target': target, 
+                'type': transaction_type, 
+                'source_amount': source_amount, 
+                'target_amount': target_amount}
 
 
     @while_loop
@@ -118,15 +147,15 @@ class TransactionCreationInterface:
 
     @while_loop
     @errors_handler
-    def _create_type(self):
-        type_id = input(f'{self.create_type_prompt}{self._show_types()}')
+    def _create_transaction_type(self):
+        type_id = input(f'{self.create_transaction_type_prompt}{self._show_transactions_types()}')
         if type_id == self.exit_code:
             print(interruption_message)
             return stop_function_code
         return self.transaction_types.get_values()[int(type_id)]
     
 
-    def _show_types(self):
+    def _show_transactions_types(self):
         types = f''
         for type in self.transaction_types:
             types += f'Enter {type.id} to trigger {type.val}\n'
@@ -139,6 +168,25 @@ class TransactionCreationInterface:
         if source == error_code:
             return error_code
         return source
+
+
+    @while_loop
+    @errors_handler
+    def _create_target_type(self, amount):
+        type_id = input(f'{self.create_target_type_prompt}{self._show_target_types(amount)}')
+        if type_id == self.exit_code:
+            print(interruption_message)
+            return stop_function_code
+        return self.target_types.get_values()[int(type_id)]
+
+
+    def _show_target_types(self, amount):
+        if amount > 0:
+            type = self.target_types.SOURCE
+            return f'Enter {type.id} to trigger {type.val}\n'
+        elif amount < 0:
+            type = self.target_types.CATEGORY
+            return f'Enter {type.id} to trigger {type.val}\n'
 
 
     def _get_category(self, amount):
