@@ -47,13 +47,7 @@ class TargetType(Enum):
 
 class TransactionCreationInterface:
 
-    def __init__(self, sources_storage,
-                 default_transaction=None,
-                 default_date=None, 
-                 default_description=None,
-                 default_amount=None,
-                 default_source=None,
-                 default_target=None) -> None:
+    def __init__(self, sources_storage, default_transaction=None) -> None:
         self.exit_code = exit_code
         self.default_input = default_input
         self.sources_storage = sources_storage
@@ -61,11 +55,9 @@ class TransactionCreationInterface:
         self.target_types = TargetType
 
         self.default_transaction = default_transaction
-        self.default_date = default_date if default_date else datetime.now().date().strftime(date_format)
-        self.default_description = default_description if default_description else 'Transaction'
-        self.default_amount = default_amount if default_amount else 0
-        self.default_source = default_source
-        self.default_target = default_target
+        self.default_date = default_transaction.date if default_transaction else datetime.now().date().strftime(date_format)
+        self.default_description = default_transaction.description if default_transaction else 'Transaction'
+        self.default_amount = default_transaction.source_amount if default_transaction else 0
         
         self.create_date_prompt = (f'Enter date of the transaction in a format "dd-mm-yyyy" or enter {self.default_input} to set to default '
                                    f'or enter {self.exit_code} to exit the input: \n')
@@ -99,13 +91,13 @@ class TransactionCreationInterface:
         source_amount = source_amount if target_type == self.target_types.CATEGORY.val else (source_amount * -1)
         target_amount = source_amount if target_type == self.target_types.CATEGORY.val else (source_amount * -1)
 
-        source = self._get_source(amount=source_amount, instance=self.default_source)
+        source = self._get_source(amount=source_amount)
         if source == error_code:
             return error_code
         
         target = (self._get_category(target_amount) 
                   if target_type == self.target_types.CATEGORY.val 
-                  else self._get_source(amount=target_amount, instance=self.default_target, target=True))
+                  else self._get_source())
         if target == error_code:
             return error_code
         
@@ -174,13 +166,11 @@ class TransactionCreationInterface:
         return types
 
 
-    def _get_source(self, amount, instance, target=False):
-        source = InstanceGetter(amount=amount, 
-                                default_instance=instance,
-                                target=target,
+    def _get_source(self, amount=None):
+        source = InstanceGetter(amount=amount,
                                 storage=self.sources_storage,
                                 default_transaction=self.default_transaction, 
-                                instance_name=self.target_types.SOURCE.val,
+                                instance_name=self.target_types.SOURCE.val
                                 ).get_instance()
         if source == error_code:
             return error_code
@@ -196,7 +186,10 @@ class TransactionCreationInterface:
 
     def _get_category(self, amount):
         return 'Category'
-        # category = InstanceGetter(self.categories_storage, 'category').get_instance()
+        # category = InstanceGetter(amount=amount,
+        #                           storage=self.sources_storage,
+        #                           default_transaction=self.default_transaction, 
+        #                           instance_name=self.target_types.CATEGORY.val).get_instance()
         # if category == error_code:
         #     return error_code
         # return category
@@ -204,19 +197,10 @@ class TransactionCreationInterface:
 
 
 class InstanceGetter:
-    def __init__(self,
-                 amount, 
-                 default_instance,
-                 target,
-                 storage,
-                 default_transaction,
-                 instance_name,
-                 ) -> None:
+    def __init__(self, amount, storage, default_transaction, instance_name) -> None:
         self.storage = storage
         self.amount = amount
-        self.default_instance = default_instance
         self.default_transaction = default_transaction
-        self.target = target
         self.exit_code = exit_code
         self.input_prompt = f'Enter {instance_name} ID among given or enter {self.exit_code} to exit the input:\n'
         self.no_available_keys_message = f'No {instance_name} with balance more or equal to {amount}\n'
@@ -239,13 +223,15 @@ class InstanceGetter:
     def _get_available_keys(self):
         available_keys = {}
         for key in self.storage.data.keys():
-            # if self.default_transaction is not None:
-            #     print(self.storage.data[key].fake_revert(self.default_transaction.id, self.target))
-            # print(self.amount)
-            current_balance = (self.storage.data[key].current_balance 
-                               if self.storage.data[key] is not self.default_instance
-                               else self.storage.data[key].fake_revert(self.default_transaction.id, self.target))
-            if self.amount >= 0 or current_balance >= abs(self.amount):
+            if self.amount:
+                if self.default_transaction:
+                    target = self.storage.data[key] is self.default_transaction.target
+                    current_balance = self.storage.data[key].fake_revert(self.default_transaction.id, target=target)
+                else:
+                    current_balance = self.storage.data[key].current_balance
+                if self.amount >= 0 or current_balance >= abs(self.amount):
+                    available_keys[key.split(id_delimiter)[1]] = key
+            else:
                 available_keys[key.split(id_delimiter)[1]] = key
 
         return available_keys if available_keys else self.no_available_keys_message
@@ -254,10 +240,15 @@ class InstanceGetter:
     def _create_view_message(self):
         message_items = []
         for key, value in self.storage.items():
-            current_balance = (self.storage.data[key].current_balance 
-                               if self.storage.data[key] is not self.default_instance 
-                               else self.storage.data[key].fake_revert(self.default_transaction.id, self.target))
-            if self.amount >= 0 or current_balance >= abs(self.amount):
+            if self.amount:
+                if self.default_transaction:
+                    target = self.storage.data[key] is self.default_transaction.target
+                    current_balance = self.storage.data[key].fake_revert(self.default_transaction.id, target=target)
+                else:
+                    current_balance = self.storage.data[key].current_balance
+                if self.amount >= 0 or current_balance >= abs(self.amount):
+                    message_items.append(f'{key.split(id_delimiter)[1]}: {value.id.split(id_delimiter)[0]}')
+            else:
                 message_items.append(f'{key.split(id_delimiter)[1]}: {value.id.split(id_delimiter)[0]}')
 
         return '\n'.join(message_items)

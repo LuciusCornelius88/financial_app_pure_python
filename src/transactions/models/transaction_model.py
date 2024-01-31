@@ -179,8 +179,8 @@ class Transaction:
         return (f'Transaction id: {self.id} \n' +
                 f'Transaction date: {self.date} \n' +
                 f'Transaction description: {self.description}\n' +
-                f'Transaction source: {self.source}\n' +
-                # f'Transaction target: {self.target.id}\n' +
+                f'Transaction source: {self.source.id}\n' +
+                f'Transaction target: {self.target.id}\n' +
                 f'Source amount: {self.source_amount}\n' + 
                 f'Target amount: {self.target_amount}')
 

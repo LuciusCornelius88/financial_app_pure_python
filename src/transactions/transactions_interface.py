@@ -18,7 +18,6 @@ from config import error_code, stop_function_code, key_error_message, \
 @unique
 class TransactionsInterfaceCommand(Enum):
     CREATE = {'id': 1, 'val': 'Create new Transaction'}
-    MASS_INSERT = {'id': 2, 'val': 'Insert new transactions into database'}
     GET = {'id': 3, 'val': 'View transaction'}
     GET_ALL = {'id': 4, 'val': 'View all Transactions'}
     UPDATE = {'id': 5, 'val': 'Update Transaction'}
@@ -44,7 +43,6 @@ class TransactionsInterface:
         self.transaction_update_interface = TransactionUpdateInterface(transaction_storage=self.transactions_storage, 
                                                                        sources_storage=sources_storage)
         self.transaction_deletion_interface = TransactionDeletionInterface(self.transactions_storage)
-        self.new_transactions_cache = []
 
 
     def show_commands(self):
@@ -58,7 +56,6 @@ class TransactionsInterface:
     def handle_commands(self, command_id):
         commands = {
             self.commands.CREATE.id: self.trigger_create,
-            self.commands.MASS_INSERT.id: self.trigger_mass_insert,
             self.commands.GET.id: self.trigger_get,
             self.commands.GET_ALL.id: self.trigger_get_all,
             self.commands.UPDATE.id: self.trigger_update,
@@ -84,19 +81,9 @@ class TransactionsInterface:
         transaction_data = self.transaction_creation_interface.create()
         if transaction_data == error_code:
             return error_code
-        self.new_transactions_cache.append(transaction_data)
-        log_message = (f'{create_obj_message}{transaction_data}')
-        return log_message
-    
-
-    def trigger_mass_insert(self):
-        for transaction_data in self.new_transactions_cache:
-            transaction_instance = Transaction(transaction_data)
-            self.transactions_storage.add(transaction_instance)
-        log_message = (f'{create_instance_message}' + 
-                       '; '.join(f'{transaction["date"]}: {transaction["description"]} {transaction["target_amount"]}' 
-                                 for transaction in self.new_transactions_cache))
-        self.new_transactions_cache.clear()
+        transaction_instance = Transaction(transaction_data)
+        self.transactions_storage.add(transaction_instance)
+        log_message = f'{create_instance_message}{transaction_instance}'
         return log_message
 
 

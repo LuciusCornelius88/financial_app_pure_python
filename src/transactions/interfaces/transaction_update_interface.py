@@ -20,13 +20,7 @@ class TransactionUpdateInterface:
         if instance == error_code:
             return error_code
 
-        creation_interface = self.creation_interface(sources_storage=self.sources_storage,
-                                                     default_transaction=instance,
-                                                     default_date=instance.date, 
-                                                     default_description=instance.description,
-                                                     default_amount=instance.source_amount,
-                                                     default_source=instance.source,
-                                                     default_target=instance.target)
+        creation_interface = self.creation_interface(sources_storage=self.sources_storage, default_transaction=instance)
         print(str(instance) + '\n')
 
         new_params = creation_interface.create()
