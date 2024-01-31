@@ -1,0 +1,32 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
+from category_creation_interface import CategoryCreationInterface
+from category_get_delete_interface import CategoryGetterInterface
+from config import error_code
+
+
+class CategoryUpdateInterface:
+    def __init__(self, categories_storage) -> None:
+        self.getter_interface = CategoryGetterInterface(categories_storage)
+        self.creation_interface = CategoryCreationInterface
+
+
+    def update(self):
+        instance = self._get_instance()
+        if instance == error_code:
+            return error_code
+
+        creation_interface = self.creation_interface(default_name=instance.name, default_balance=instance.init_balance)
+        print(str(instance) + '\n')
+
+        new_params = creation_interface.create()
+        if new_params == error_code:
+            return error_code
+        return instance.update(new_params)
+
+
+    def _get_instance(self):
+        return self.getter_interface.get()

@@ -12,7 +12,7 @@ from transaction_update_interface import TransactionUpdateInterface
 from transaction_model import Transaction
 from transactions_storage import Transactions
 from config import error_code, stop_function_code, key_error_message, \
-    loop_exit_message, create_obj_message, create_instance_message
+    loop_exit_message, create_instance_message
 
 
 @unique

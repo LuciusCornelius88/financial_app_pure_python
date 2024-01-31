@@ -4,10 +4,14 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent / 'sources'))
 sys.path.append(str(Path(__file__).parent / 'sources/models'))
+sys.path.append(str(Path(__file__).parent / 'categories'))
+sys.path.append(str(Path(__file__).parent / 'categories/models'))
 sys.path.append(str(Path(__file__).parent / 'transactions'))
 
 from sources_storage import Sources
 from sources_interface import SourcesInterface
+from categories_storage import Categories
+from categories_interface import CategoriesInterface
 from transactions_interface import TransactionsInterface
 from config import stop_function_code, error_code, goodbye_message, key_error_message
 
@@ -56,11 +60,14 @@ class MainInterface:
     def __init__(self) -> None:
         try:
             sources_storage = Sources().restore_from_file()
+            categories_storage = Categories().restore_from_file()
         except (FileNotFoundError, EOFError):
             sources_storage = Sources()
+            categories_storage = Categories()
             
         self.commands = MainInterfaceCommand
         self.sources_interface = SourcesInterface(sources_storage)
+        self.categories_interface = CategoriesInterface(categories_storage)
         self.transactions_interface = TransactionsInterface(sources_storage)
 
 
@@ -99,7 +106,7 @@ class MainInterface:
 
 
     def trigger_categories(self):
-        return 'Categories'
+        interface_loop(self.categories_interface)
 
 
     def trigger_transactions(self):
