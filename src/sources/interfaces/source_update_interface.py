@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 from source_creation_interface import SourceCreationInterface
 from source_get_delete_interface import SourceGetterInterface
 from config import error_code

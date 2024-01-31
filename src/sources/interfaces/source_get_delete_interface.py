@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 from config import error_code, stop_function_code, exit_code, interruption_message, \
     id_delimiter
 from decorators import errors_handler

@@ -41,7 +41,8 @@ class TransactionsInterface:
         self.commands = TransactionsInterfaceCommand
         self.transaction_creation_interface = TransactionCreationInterface(sources_storage)
         self.transaction_getter_interface = TransactionGetterInterface(self.transactions_storage)
-        self.transaction_update_interface = TransactionUpdateInterface(self.transactions_storage)
+        self.transaction_update_interface = TransactionUpdateInterface(transaction_storage=self.transactions_storage, 
+                                                                       sources_storage=sources_storage)
         self.transaction_deletion_interface = TransactionDeletionInterface(self.transactions_storage)
         self.new_transactions_cache = []
 

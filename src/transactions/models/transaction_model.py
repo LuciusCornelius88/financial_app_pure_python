@@ -42,7 +42,6 @@ class Transaction:
     @property
     def id(self):
         return self._id
-    
 
     @id.setter
     def id(self, date):
@@ -50,12 +49,10 @@ class Transaction:
             self._id = None
         else:
             self._id = date + self._id_suffix
-
     
     @property
     def source(self):
         return self._source
-    
 
     @source.setter
     def source(self, source):
@@ -64,12 +61,10 @@ class Transaction:
         else:
             source.update_transaction(self)
             self._source = source
-
     
     @property
     def target(self):
         return self._target
-    
 
     @target.setter
     def target(self, target):
@@ -82,6 +77,8 @@ class Transaction:
 
     def delete(self) -> str:
         change_log = f'Transaction {self.id}: {self.description} {self.source_amount} was deleted.\n'
+        self.source.revert_transaction(self.id)
+        self.target.revert_transaction(self.id, target=True)
 
         self.id = None
         self.date = None
@@ -101,13 +98,16 @@ class Transaction:
 
 
     def update(self, params):
+        self.source.revert_transaction(self.id)
+        self.target.revert_transaction(self.id, target=True)
+
         ch_date_log = self._update_date(params['date'])
         ch_description_log = self._update_description(params['description'])
-        ch_source_log = self._update_source(params['source'])
-        ch_target_log = self._update_target(params['target'])
         ch_type_log = self._update_type(params['type'])
         ch_source_amount_log = self._update_source_amount(params['source_amount'])
         ch_target_amount_log = self._update_target_amount(params['target_amount'])
+        ch_source_log = self._update_source(params['source'])
+        ch_target_log = self._update_target(params['target'])
 
         return (ch_date_log + ch_description_log + ch_source_log + 
                 ch_target_log + ch_type_log + ch_source_amount_log + ch_target_amount_log)
