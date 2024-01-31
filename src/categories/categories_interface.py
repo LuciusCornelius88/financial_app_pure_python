@@ -22,6 +22,8 @@ class CategoriesInterfaceCommand(Enum):
     GET_ALL = {'id': 4, 'val': 'View all categories'}
     UPDATE = {'id': 5, 'val': 'Update category'}
     DELETE = {'id': 6, 'val': 'Delete category'}
+    GET_TRANSACTIONS = {'id': 7, 'val': 'View related transactions'}
+    GET_CHANGE_LOG = {'id': 8, 'val': 'View change log'}
     STOP = {'id': -1, 'val': 'Stop the programm'}
     
 
@@ -57,6 +59,8 @@ class CategoriesInterface:
             self.commands.GET_ALL.id: self.trigger_get_all,
             self.commands.UPDATE.id: self.trigger_update,
             self.commands.DELETE.id: self.trigger_delete,
+            self.commands.GET_TRANSACTIONS.id: self.trigger_get_transactions,
+            self.commands.GET_CHANGE_LOG.id: self.trigger_get_change_log,
             self.commands.STOP.id: self.trigger_stop,
         }
 
@@ -107,3 +111,12 @@ class CategoriesInterface:
 
     def trigger_delete(self):
         return self.category_deletion_interface.delete()
+
+
+    def trigger_get_transactions(self):
+        instance = self.category_getter_interface.get()
+        return instance.view_transactions()
+
+    def trigger_get_change_log(self):
+        instance = self.category_getter_interface.get()
+        return instance.view_change_log()

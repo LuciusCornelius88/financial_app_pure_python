@@ -18,10 +18,10 @@ from config import error_code, stop_function_code, key_error_message, \
 @unique
 class TransactionsInterfaceCommand(Enum):
     CREATE = {'id': 1, 'val': 'Create new Transaction'}
-    GET = {'id': 3, 'val': 'View transaction'}
-    GET_ALL = {'id': 4, 'val': 'View all Transactions'}
-    UPDATE = {'id': 5, 'val': 'Update Transaction'}
-    DELETE = {'id': 6, 'val': 'Delete Transaction'}
+    GET = {'id': 2, 'val': 'View transaction'}
+    GET_ALL = {'id': 3, 'val': 'View all Transactions'}
+    UPDATE = {'id': 4, 'val': 'Update Transaction'}
+    DELETE = {'id': 5, 'val': 'Delete Transaction'}
     STOP = {'id': -1, 'val': 'Stop the programm'}
     
 
@@ -31,17 +31,19 @@ class TransactionsInterfaceCommand(Enum):
 
 
 class TransactionsInterface:
-    def __init__(self, sources_storage) -> None:
+    def __init__(self, sources_storage, categories_storage) -> None:
         try:
             self.transactions_storage = Transactions().restore_from_file()
         except (FileNotFoundError, EOFError):
             self.transactions_storage = Transactions()
 
         self.commands = TransactionsInterfaceCommand
-        self.transaction_creation_interface = TransactionCreationInterface(sources_storage)
+        self.transaction_creation_interface = TransactionCreationInterface(sources_storage=sources_storage, 
+                                                                           categories_storage=categories_storage)
         self.transaction_getter_interface = TransactionGetterInterface(self.transactions_storage)
         self.transaction_update_interface = TransactionUpdateInterface(transaction_storage=self.transactions_storage, 
-                                                                       sources_storage=sources_storage)
+                                                                       sources_storage=sources_storage,
+                                                                       categories_storage=categories_storage)
         self.transaction_deletion_interface = TransactionDeletionInterface(self.transactions_storage)
 
 

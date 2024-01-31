@@ -47,10 +47,13 @@ class TargetType(Enum):
 
 class TransactionCreationInterface:
 
-    def __init__(self, sources_storage, default_transaction=None) -> None:
+    def __init__(self, sources_storage, categories_storage, default_transaction=None) -> None:
         self.exit_code = exit_code
         self.default_input = default_input
+
         self.sources_storage = sources_storage
+        self.categories_storage = categories_storage
+
         self.transaction_types = TransactionType
         self.target_types = TargetType
 
@@ -95,7 +98,7 @@ class TransactionCreationInterface:
         if source == error_code:
             return error_code
         
-        target = (self._get_category(target_amount) 
+        target = (self._get_category(amount=target_amount) 
                   if target_type == self.target_types.CATEGORY.val 
                   else self._get_source())
         if target == error_code:
@@ -170,8 +173,7 @@ class TransactionCreationInterface:
         source = InstanceGetter(amount=amount,
                                 storage=self.sources_storage,
                                 default_transaction=self.default_transaction, 
-                                instance_name=self.target_types.SOURCE.val
-                                ).get_instance()
+                                instance_name=self.target_types.SOURCE.val).get_instance()
         if source == error_code:
             return error_code
         return source
@@ -185,14 +187,13 @@ class TransactionCreationInterface:
 
 
     def _get_category(self, amount):
-        return 'Category'
-        # category = InstanceGetter(amount=amount,
-        #                           storage=self.sources_storage,
-        #                           default_transaction=self.default_transaction, 
-        #                           instance_name=self.target_types.CATEGORY.val).get_instance()
-        # if category == error_code:
-        #     return error_code
-        # return category
+        category = InstanceGetter(amount=amount,
+                                  storage=self.categories_storage,
+                                  default_transaction=self.default_transaction, 
+                                  instance_name=self.target_types.CATEGORY.val).get_instance()
+        if category == error_code:
+            return error_code
+        return category
 
 
 
@@ -224,11 +225,14 @@ class InstanceGetter:
         available_keys = {}
         for key in self.storage.data.keys():
             if self.amount:
+                instance = self.storage.data[key]
                 if self.default_transaction:
-                    target = self.storage.data[key] is self.default_transaction.target
-                    current_balance = self.storage.data[key].fake_revert(self.default_transaction.id, target=target)
+                    source = instance is self.default_transaction.source
+                    target = instance is self.default_transaction.target
+                    current_balance = (instance.fake_revert(self.default_transaction.id, target=target) 
+                                       if source or target else instance.current_balance)
                 else:
-                    current_balance = self.storage.data[key].current_balance
+                    current_balance = instance.current_balance
                 if self.amount >= 0 or current_balance >= abs(self.amount):
                     available_keys[key.split(id_delimiter)[1]] = key
             else:
@@ -241,9 +245,12 @@ class InstanceGetter:
         message_items = []
         for key, value in self.storage.items():
             if self.amount:
+                instance = self.storage.data[key]
                 if self.default_transaction:
-                    target = self.storage.data[key] is self.default_transaction.target
-                    current_balance = self.storage.data[key].fake_revert(self.default_transaction.id, target=target)
+                    source = instance is self.default_transaction.source
+                    target = instance is self.default_transaction.target
+                    current_balance = (instance.fake_revert(self.default_transaction.id, target=target) 
+                                       if source or target else instance.current_balance)
                 else:
                     current_balance = self.storage.data[key].current_balance
                 if self.amount >= 0 or current_balance >= abs(self.amount):

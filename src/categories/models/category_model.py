@@ -91,22 +91,21 @@ class Category:
         return '\n\n'.join(self._change_log)
 
 
-    def revert_transaction(self, transaction_id, target=False):
+    def revert_transaction(self, transaction_id, target=None):
         transaction = self._transactions[transaction_id]
-        self._update_current_balance(transaction, target=target, revert=True)
+        self._update_current_balance(transaction, revert=True)
         del self._transactions[transaction_id]
         change_log = f'Transaction {transaction_id} was deleted.\n'
         self._update_change_log(change_log)
 
     
-    def fake_revert(self, transaction_id, target):
+    def fake_revert(self, transaction_id, target=None):
         transaction = self._transactions[transaction_id]
-        amount = transaction.target_amount if target else transaction.Category_amount
-        return self.current_balance - amount
+        return self.current_balance - transaction.target_amount
 
     
-    def update_transaction(self, transaction, target=False):
-        self._update_current_balance(transaction, target=target)
+    def update_transaction(self, transaction, target=None):
+        self._update_current_balance(transaction)
         self._update_transactions(transaction)
 
 
@@ -117,9 +116,8 @@ class Category:
         return ch_name_log + ch_balance_log
 
 
-    def _update_current_balance(self, transaction, target, revert=False):
-        amount = transaction.target_amount if target else transaction.Category_amount
-        difference = (amount * -1) if revert else amount 
+    def _update_current_balance(self, transaction, revert=False):
+        difference = (transaction.target_amount * -1) if revert else transaction.target_amount 
         self.current_balance += difference
         change_log = (f'New current balance: {self.current_balance}\n' +
                       f'Initial balance: {self.init_balance}\n' +

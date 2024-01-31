@@ -68,7 +68,7 @@ class MainInterface:
         self.commands = MainInterfaceCommand
         self.sources_interface = SourcesInterface(sources_storage)
         self.categories_interface = CategoriesInterface(categories_storage)
-        self.transactions_interface = TransactionsInterface(sources_storage)
+        self.transactions_interface = TransactionsInterface(sources_storage, categories_storage)
 
 
     def show_commands(self):
