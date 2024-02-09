@@ -7,7 +7,7 @@ from datetime import datetime
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from config import dumps_path, sources_dump_file
+from config import dumps_path, sources_dump_file, error_code
 from decorators import errors_handler
 
 
@@ -51,10 +51,11 @@ class Sources(UserDict):
 
     @errors_handler
     def delete(self, instance_id):
-        instance = self.data.pop(instance_id)
-        change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" deleted from the {self.__class__.__name__} storage.'
+        instance = self.data[instance_id]
         instance.delete()
+        change_log = f'{instance.__class__.__name__} "{instance.id}: {instance.name}" deleted from the {self.__class__.__name__} storage.'
         self._update_change_log(change_log)
+        del self.data[instance_id]
         return change_log
 
 

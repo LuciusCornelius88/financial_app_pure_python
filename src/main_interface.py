@@ -26,7 +26,7 @@ def interface_loop(interface):
         except ValueError:
             print(f'{ValueError.__name__}: id should be numeric. Try again!')
             continue
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             input_command = MainInterfaceCommand.STOP.id
 
         trigger_function = interface.handle_commands(input_command)

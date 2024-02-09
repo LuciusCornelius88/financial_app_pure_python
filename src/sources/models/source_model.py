@@ -4,7 +4,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from config import id_delimiter 
+from config import id_delimiter
+from custom_exceptions import InvalidDeletion
 
 
 class Source:
@@ -70,17 +71,21 @@ class Source:
 
 
     def delete(self) -> str:
-        change_log = f'Source {self.id}: {self.name} was deleted.\n'
+        if self._transactions:
+            change_log = f'Source {self.id}: {self.name} cannot be deleted.\n'
+            self._update_change_log(change_log)
+            raise InvalidDeletion
+        else:
+            change_log = f'Source {self.id}: {self.name} was deleted.\n'
 
-        self.id = None
-        self.name = None
-        self.init_balance = None
-        self.current_balance = None
-        self.current_transaction = None
-        self._transactions = None
+            self.id = None
+            self.name = None
+            self.init_balance = None
+            self.current_balance = None
+            self.current_transaction = None
+            self._transactions = None
 
-        self._update_change_log(change_log)
-        return change_log
+            self._update_change_log(change_log)
 
 
     def view_transactions(self) -> str:
