@@ -14,4 +14,4 @@ Just run the main file and follow the instructions.
 
 First you should create Sources and Categories of payments. Then you can create Transactions based on Sources and Categories.
 
-![Example]("./images/example of console interaction.png")
+![Example]("images/example of console interaction.png")
