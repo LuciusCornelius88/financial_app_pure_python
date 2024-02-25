@@ -1,5 +1,3 @@
-#Financial console application
-
 **Idea**
 
 This application is a console version of a simple accounting tool. It is developed without any additional modules, only pure python with inbuilt modules is used.
