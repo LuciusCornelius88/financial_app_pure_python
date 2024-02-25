@@ -4,5 +4,4 @@
 /src/__pycache__/
 /dumps/*
 !dumps/.gitkeep
-.prettierrc
-test.py
+/unittests/
