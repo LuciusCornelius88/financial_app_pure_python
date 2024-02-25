@@ -1,5 +1,3 @@
-#Financial console application
-
 **Idea**
 
 This application is a console version of a simple accounting tool. It is developed without any additional modules, only pure python with inbuilt modules is used.
@@ -14,4 +12,4 @@ Just run the main file and follow the instructions.
 
 First you should create Sources and Categories of payments. Then you can create Transactions based on Sources and Categories.
 
-![Example]("images/example of console interaction.png")
+![Example]('images/example of console interaction.png')
