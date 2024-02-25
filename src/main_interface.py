@@ -106,4 +106,4 @@ class MainInterface:
         interface_loop(self.transactions_interface)
 
     def trigger_report(self):
-        return 'Report...'
+        return 'Report'
