@@ -1,5 +1,6 @@
 import shutil
-import os, stat
+import os
+import stat
 from pathlib import Path
 
 from main_interface import MainInterface, interface_loop
@@ -30,4 +31,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-        
