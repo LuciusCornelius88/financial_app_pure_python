@@ -12,4 +12,4 @@ Just run the main file and follow the instructions.
 
 First you should create Sources and Categories of payments. Then you can create Transactions based on Sources and Categories.
 
-![Example](images//example_of_console_interaction.png)
+![Example](//images//example_of_console_interaction.png)
