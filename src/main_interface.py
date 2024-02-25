@@ -32,7 +32,7 @@ def interface_loop(interface):
         trigger_function = interface.handle_commands(input_command)
         if trigger_function == error_code:
             continue
-    
+
         result = trigger_function()
         if result == stop_function_code:
             break
@@ -55,7 +55,6 @@ class MainInterfaceCommand(Enum):
         self.val = vals.get('val')
 
 
-
 class MainInterface:
     def __init__(self) -> None:
         try:
@@ -64,12 +63,11 @@ class MainInterface:
         except (FileNotFoundError, EOFError):
             sources_storage = Sources()
             categories_storage = Categories()
-            
+
         self.commands = MainInterfaceCommand
         self.sources_interface = SourcesInterface(sources_storage)
         self.categories_interface = CategoriesInterface(categories_storage)
         self.transactions_interface = TransactionsInterface(sources_storage, categories_storage)
-
 
     def show_commands(self):
         commands = f''
@@ -78,7 +76,6 @@ class MainInterface:
 
         return commands
 
-    
     def handle_commands(self, command_id):
         commands = {
             self.commands.SOURCES.id: self.trigger_sources,
@@ -94,25 +91,19 @@ class MainInterface:
         except KeyError:
             print(f'{KeyError.__name__}{key_error_message}')
             return error_code
-    
 
     def trigger_stop(self):
         print(goodbye_message)
         return stop_function_code
 
-
     def trigger_sources(self):
         interface_loop(self.sources_interface)
-
 
     def trigger_categories(self):
         interface_loop(self.categories_interface)
 
-
     def trigger_transactions(self):
         interface_loop(self.transactions_interface)
-    
 
     def trigger_report(self):
-        return 'Report'
-    
+        return 'Report...'
